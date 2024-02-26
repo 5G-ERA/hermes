@@ -13,6 +13,19 @@ var postCmd = &cobra.Command{
 	Long:  `Sends the data from specified directory directly to S3.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		fmt.Println("post called")
+
+		//sigCh := make(chan os.Signal, 1)
+		//
+		//// Notify the channel when a SIGTERM signal is received
+		//signal.Notify(sigCh, syscall.SIGTERM)
+		//
+		//fmt.Println("Waiting for SIGTERM signal...")
+		//
+		//// Block until a signal is received
+		//sigReceived := <-sigCh
+		//
+		//fmt.Println("Received signal: %v", sigReceived)
+		//fmt.Println("fetch completed")
 		return nil
 	},
 }
