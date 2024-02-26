@@ -1,0 +1,14 @@
+FROM golang:1.22 AS build_env
+
+RUN go install github.com/go-delve/delve/cmd/dlv@latest
+ADD . /dockerdev
+WORKDIR /dockerdev
+RUN go build -gcflags "all=-N -l" -o hermes main.go
+
+FROM debian:bookworm
+EXPOSE 40000
+WORKDIR /
+
+COPY --from=build_env /go/bin/dlv /
+COPY --from=build_env /dockerdev/hermes /
+CMD ["/dlv", "--listen=:40000", "--headless=true", "--api-version=2", "--accept-multiclient", "exec", "hermes"]

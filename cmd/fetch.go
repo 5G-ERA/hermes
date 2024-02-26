@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-
+	"github.com/Artonus/hermes/internal/cmdutil"
 	"github.com/spf13/cobra"
 )
 
@@ -13,6 +13,28 @@ var fetchCmd = &cobra.Command{
 	Long:  `Fetches the data from S3 to the specified directory.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		fmt.Println("fetch called")
+
+		fetchClient, err := cmdutil.CreateFetchClient()
+		if err != nil {
+			panic(err)
+		}
+
+		err = fetchClient.Fetch("middleware")
+		if err != nil {
+			return err
+		}
+		//sigCh := make(chan os.Signal, 1)
+		//
+		//// Notify the channel when a SIGTERM signal is received
+		//signal.Notify(sigCh, syscall.SIGTERM)
+		//
+		//fmt.Println("Waiting for SIGTERM signal...")
+		//
+		//// Block until a signal is received
+		//sigReceived := <-sigCh
+		//
+		//fmt.Println("Received signal: %v", sigReceived)
+		//fmt.Println("fetch completed")
 		return nil
 	},
 }
