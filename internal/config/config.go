@@ -7,6 +7,7 @@ type HermesConfig struct {
 	AwsBucket          string
 	FetchDir           string
 	PostDir            string
+	Key                string
 }
 
 type HermesOption func(*HermesConfig)
@@ -30,6 +31,11 @@ func WithFetchDir(fetchDir string) HermesOption {
 func WithPostDir(postDir string) HermesOption {
 	return func(c *HermesConfig) {
 		c.PostDir = postDir
+	}
+}
+func WithKey(key string) HermesOption {
+	return func(c *HermesConfig) {
+		c.Key = key
 	}
 }
 

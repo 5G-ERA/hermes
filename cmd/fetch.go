@@ -20,14 +20,15 @@ var fetchCmd = &cobra.Command{
 		region := os.Getenv("AWS_REGION")
 		bucket := os.Getenv("AWS_BUCKET")
 		fetchDir := os.Getenv("FETCH_DIR")
-		cfg := config.NewConfig(accessKey, secretKey, config.WithFetchDir(fetchDir), config.WithBucket(bucket), config.WithRegion(region))
+		key := os.Getenv("NETAPP_KEY")
+		cfg := config.NewConfig(accessKey, secretKey, config.WithFetchDir(fetchDir), config.WithBucket(bucket), config.WithRegion(region), config.WithKey(key))
 
 		fetchClient, err := cmdutil.CreateFetchClient(cfg)
 		if err != nil {
 			panic(err)
 		}
 
-		err = fetchClient.Fetch("", fetchDir)
+		err = fetchClient.Fetch(cfg.Key, fetchDir)
 		if err != nil {
 			return err
 		}

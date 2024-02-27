@@ -22,7 +22,8 @@ var postCmd = &cobra.Command{
 		region := os.Getenv("AWS_REGION")
 		bucket := os.Getenv("AWS_BUCKET")
 		postDir := os.Getenv("POST_DIR")
-		cfg := config.NewConfig(accessKey, secretKey, config.WithPostDir(postDir), config.WithBucket(bucket), config.WithRegion(region))
+		key := os.Getenv("NETAPP_KEY")
+		cfg := config.NewConfig(accessKey, secretKey, config.WithPostDir(postDir), config.WithBucket(bucket), config.WithRegion(region), config.WithKey(key))
 
 		postClient, err := cmdutil.CreatePostClient(cfg)
 		if err != nil {
@@ -39,7 +40,7 @@ var postCmd = &cobra.Command{
 		// Notify the channel when a SIGTERM signal is received
 		fmt.Printf("Received signal: %v\n", sigReceived)
 		// Upload the data to S3
-		err = postClient.Post("", postDir)
+		err = postClient.Post(cfg.Key, postDir)
 		if err != nil {
 			return err
 		}
