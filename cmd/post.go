@@ -45,7 +45,7 @@ var postCmd = &cobra.Command{
 			return err
 		}
 
-		fmt.Println("fetch completed")
+		fmt.Println("Files upload successful")
 		return nil
 	},
 }

@@ -2,6 +2,7 @@ package data_service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/Artonus/hermes/internal/util"
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -9,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 type S3Service struct {
@@ -107,4 +109,45 @@ func (s3Service *S3Service) Post(netAppKey, sourceDir string) error {
 		}
 	}
 	return nil
+}
+
+func (s3Service *S3Service) Delete(netAppKey string) (bool, error) {
+	ctx := context.TODO()
+	deleteAll := false
+	if netAppKey == "" {
+		fmt.Printf("NetApp Key is empty do you want to delete all objects from bucket %s? (y/N): ", s3Service.bucket)
+		var input string
+		_, err := fmt.Scanln(&input)
+		if err != nil {
+			return false, err
+		}
+		if strings.ToLower(input) != "y" && strings.ToLower(input) != "yes" {
+			return true, errors.New("deleting operation aborted")
+		}
+		deleteAll = true
+	}
+	prefix := ""
+	if !deleteAll {
+		prefix = netAppKey + "/"
+	}
+	resp, err := s3Service.s3.ListObjectsV2(ctx, &s3.ListObjectsV2Input{
+		Bucket: aws.String(s3Service.bucket),
+		Prefix: aws.String(prefix),
+	}, func(o *s3.Options) {
+		o.Region = s3Service.region
+	})
+	if err != nil {
+		return false, err
+	}
+
+	for _, content := range resp.Contents {
+		_, deleteErr := s3Service.s3.DeleteObject(ctx, &s3.DeleteObjectInput{
+			Bucket: aws.String(s3Service.bucket),
+			Key:    content.Key,
+		})
+		if deleteErr != nil {
+			return false, deleteErr
+		}
+	}
+	return true, nil
 }

@@ -19,6 +19,9 @@ func CreateFetchClient(cfg *hermesConfig.HermesConfig) (data_service.DataFetcher
 func CreatePostClient(cfg *hermesConfig.HermesConfig) (data_service.DataPoster, error) {
 	return create(cfg)
 }
+func CreateDeleteClient(cfg *hermesConfig.HermesConfig) (data_service.DataCleaner, error) {
+	return create(cfg)
+}
 
 func create(cfg *hermesConfig.HermesConfig) (*data_service.S3Service, error) {
 	s3Client, err := createS3Client(cfg)

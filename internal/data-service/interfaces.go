@@ -6,3 +6,7 @@ type DataFetcher interface {
 type DataPoster interface {
 	Post(netAppKey, sourceDir string) error
 }
+
+type DataCleaner interface {
+	Delete(netAppKey string) (bool, error)
+}
