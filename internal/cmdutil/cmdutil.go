@@ -4,24 +4,24 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	hermesConfig "github.com/Artonus/hermes/internal/config"
 	"github.com/Artonus/hermes/internal/data-service"
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
+	awsConfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"os"
 )
 
-func CreateFetchClient() (data_service.DataFetcher, error) {
-	return create()
+func CreateFetchClient(cfg *hermesConfig.HermesConfig) (data_service.DataFetcher, error) {
+	return create(cfg)
 }
 
-func CreatePostClient() (data_service.DataPoster, error) {
-	return create()
+func CreatePostClient(cfg *hermesConfig.HermesConfig) (data_service.DataPoster, error) {
+	return create(cfg)
 }
 
-func create() (*data_service.S3Service, error) {
-	s3Client, err := createS3Client()
+func create(cfg *hermesConfig.HermesConfig) (*data_service.S3Service, error) {
+	s3Client, err := createS3Client(cfg)
 	if err != nil {
 		return nil, err
 	}
@@ -32,28 +32,23 @@ func create() (*data_service.S3Service, error) {
 	return s3Service, nil
 }
 
-func createS3Client() (*s3.Client, error) {
-	accessKey := os.Getenv("AWS_ACCESS_KEY_ID")
-	secretKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
-	region := os.Getenv("AWS_REGION")
-	bucket := os.Getenv("AWS_BUCKET")
-
-	if accessKey == "" || secretKey == "" {
+func createS3Client(cfg *hermesConfig.HermesConfig) (*s3.Client, error) {
+	if cfg.AwsAccessKeyId == "" || cfg.AwsAccessSecretKey == "" {
 		return nil, errors.New("AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY must be set")
 	}
-	cfg, err := config.LoadDefaultConfig(context.TODO(),
-		config.WithRegion(region),
-		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(accessKey, secretKey, "")))
+	awsCfg, err := awsConfig.LoadDefaultConfig(context.TODO(),
+		awsConfig.WithRegion(cfg.AwsRegion),
+		awsConfig.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(cfg.AwsAccessKeyId, cfg.AwsAccessSecretKey, "")))
 
 	if err != nil {
 		fmt.Println("Error loading AWS config:", err)
 		return nil, err
 	}
-	if isValidRegionAndBucket(cfg, region, bucket) == false {
+	if isValidRegionAndBucket(awsCfg, cfg.AwsRegion, cfg.AwsBucket) == false {
 		return nil, errors.New("AWS_REGION must be set to a valid AWS region")
 	}
 
-	sss := s3.NewFromConfig(cfg)
+	sss := s3.NewFromConfig(awsCfg)
 	return sss, nil
 }
 

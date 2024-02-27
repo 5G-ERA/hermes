@@ -95,6 +95,7 @@ func (s3Service *S3Service) Post(netAppKey, sourceDir string) error {
 		if openFileErr != nil {
 			return openFileErr
 		}
+		fmt.Printf("Uploading file: %s\n", file.Name())
 		_, uploadErr := uploader.Upload(context.TODO(), &s3.PutObjectInput{
 			Bucket: aws.String(s3Service.bucket),
 			Key:    aws.String(file.Name()),

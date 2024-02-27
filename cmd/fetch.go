@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/Artonus/hermes/internal/cmdutil"
+	"github.com/Artonus/hermes/internal/config"
 	"github.com/spf13/cobra"
 	"os"
 )
@@ -14,8 +15,14 @@ var fetchCmd = &cobra.Command{
 	Long:  `Fetches the data from S3 to the specified directory.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		fmt.Println("fetch called")
+		accessKey := os.Getenv("AWS_ACCESS_KEY_ID")
+		secretKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
+		region := os.Getenv("AWS_REGION")
+		bucket := os.Getenv("AWS_BUCKET")
 		fetchDir := os.Getenv("FETCH_DIR")
-		fetchClient, err := cmdutil.CreateFetchClient()
+		cfg := config.NewConfig(accessKey, secretKey, config.WithFetchDir(fetchDir), config.WithBucket(bucket), config.WithRegion(region))
+
+		fetchClient, err := cmdutil.CreateFetchClient(cfg)
 		if err != nil {
 			panic(err)
 		}

@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/Artonus/hermes/internal/cmdutil"
+	"github.com/Artonus/hermes/internal/config"
 	"os"
 	"os/signal"
 	"syscall"
@@ -16,9 +17,14 @@ var postCmd = &cobra.Command{
 	Short: "Sends the data to S3.",
 	Long:  `Sends the data from specified directory directly to S3.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fmt.Println("post called")
-		fetchDir := os.Getenv("POST_DIR")
-		postClient, err := cmdutil.CreatePostClient()
+		accessKey := os.Getenv("AWS_ACCESS_KEY_ID")
+		secretKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
+		region := os.Getenv("AWS_REGION")
+		bucket := os.Getenv("AWS_BUCKET")
+		postDir := os.Getenv("POST_DIR")
+		cfg := config.NewConfig(accessKey, secretKey, config.WithPostDir(postDir), config.WithBucket(bucket), config.WithRegion(region))
+
+		postClient, err := cmdutil.CreatePostClient(cfg)
 		if err != nil {
 			panic(err)
 		}
@@ -31,9 +37,9 @@ var postCmd = &cobra.Command{
 		// Block until a signal is received
 		sigReceived := <-sigCh
 		// Notify the channel when a SIGTERM signal is received
-		fmt.Println("Received signal: %v", sigReceived)
+		fmt.Printf("Received signal: %v\n", sigReceived)
 		// Upload the data to S3
-		err = postClient.Post("", fetchDir)
+		err = postClient.Post("", postDir)
 		if err != nil {
 			return err
 		}
