@@ -46,11 +46,7 @@ func (s3Service *S3Service) Fetch(netAppKey, targetDir string) error {
 
 	for _, obj := range resp.Contents {
 		// Specify the local file path to save the object
-		pwd, pwdErr := os.Getwd()
-		if pwdErr != nil {
-			return pwdErr
-		}
-		localFilePath := filepath.Join(pwd, targetDir, *obj.Key)
+		localFilePath := filepath.Join(targetDir, netAppKey, *obj.Key)
 		errCreateDir := util.EnsurePathToFileExists(localFilePath)
 		if errCreateDir != nil {
 			return errCreateDir
@@ -90,7 +86,7 @@ func (s3Service *S3Service) Post(netAppKey, sourceDir string) error {
 	}
 
 	for _, file := range files {
-		filePath := filepath.Join(sourceDir, file.Name())
+		filePath := filepath.Join(sourceDir, netAppKey, file.Name())
 		fileData, openFileErr := os.Open(filePath)
 		if openFileErr != nil {
 			return openFileErr
