@@ -4,5 +4,5 @@ type DataFetcher interface {
 	Fetch(netAppKey, targetDir string) error
 }
 type DataPoster interface {
-	Post(dir string) error
+	Post(netAppKey, sourceDir string) error
 }

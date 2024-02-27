@@ -2,6 +2,10 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/Artonus/hermes/internal/cmdutil"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/spf13/cobra"
 )
@@ -13,19 +17,28 @@ var postCmd = &cobra.Command{
 	Long:  `Sends the data from specified directory directly to S3.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		fmt.Println("post called")
+		fetchDir := os.Getenv("POST_DIR")
+		postClient, err := cmdutil.CreatePostClient()
+		if err != nil {
+			panic(err)
+		}
 
-		//sigCh := make(chan os.Signal, 1)
-		//
-		//// Notify the channel when a SIGTERM signal is received
-		//signal.Notify(sigCh, syscall.SIGTERM)
-		//
-		//fmt.Println("Waiting for SIGTERM signal...")
-		//
-		//// Block until a signal is received
-		//sigReceived := <-sigCh
-		//
-		//fmt.Println("Received signal: %v", sigReceived)
-		//fmt.Println("fetch completed")
+		sigCh := make(chan os.Signal, 1)
+		signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
+
+		fmt.Println("Waiting for SIGTERM signal...")
+
+		// Block until a signal is received
+		sigReceived := <-sigCh
+		// Notify the channel when a SIGTERM signal is received
+		fmt.Println("Received signal: %v", sigReceived)
+		// Upload the data to S3
+		err = postClient.Post("", fetchDir)
+		if err != nil {
+			return err
+		}
+
+		fmt.Println("fetch completed")
 		return nil
 	},
 }

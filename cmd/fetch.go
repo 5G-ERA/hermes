@@ -14,14 +14,13 @@ var fetchCmd = &cobra.Command{
 	Long:  `Fetches the data from S3 to the specified directory.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		fmt.Println("fetch called")
-		targetDir := os.Getenv("FETCH_DIR")
+		fetchDir := os.Getenv("FETCH_DIR")
 		fetchClient, err := cmdutil.CreateFetchClient()
 		if err != nil {
 			panic(err)
 		}
-		// TODO retrieve fetch directory from env
 
-		err = fetchClient.Fetch("", targetDir)
+		err = fetchClient.Fetch("", fetchDir)
 		if err != nil {
 			return err
 		}

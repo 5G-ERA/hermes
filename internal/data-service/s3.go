@@ -51,7 +51,7 @@ func (s3Service *S3Service) Fetch(netAppKey, targetDir string) error {
 			return pwdErr
 		}
 		localFilePath := filepath.Join(pwd, targetDir, *obj.Key)
-		errCreateDir := util.EnsurePathExists(localFilePath)
+		errCreateDir := util.EnsurePathToFileExists(localFilePath)
 		if errCreateDir != nil {
 			return errCreateDir
 		}
@@ -68,6 +68,7 @@ func (s3Service *S3Service) Fetch(netAppKey, targetDir string) error {
 		})
 		if errDownload != nil {
 			fmt.Printf("Error downloading object %s: %v\n", *obj.Key, errDownload)
+			return errDownload
 		} else {
 			fmt.Printf("Downloaded object: %s\n", localFilePath)
 		}
@@ -77,5 +78,36 @@ func (s3Service *S3Service) Fetch(netAppKey, targetDir string) error {
 		}
 	}
 
+	return nil
+}
+
+func (s3Service *S3Service) Post(netAppKey, sourceDir string) error {
+	uploader := manager.NewUploader(s3Service.s3)
+
+	files, err := os.ReadDir(sourceDir)
+	if err != nil {
+		return err
+	}
+
+	for _, file := range files {
+		filePath := filepath.Join(sourceDir, file.Name())
+		fileData, openFileErr := os.Open(filePath)
+		if openFileErr != nil {
+			return openFileErr
+		}
+		_, uploadErr := uploader.Upload(context.TODO(), &s3.PutObjectInput{
+			Bucket: aws.String(s3Service.bucket),
+			Key:    aws.String(file.Name()),
+			Body:   fileData,
+		})
+
+		if uploadErr != nil {
+			return uploadErr
+		}
+		errClose := fileData.Close()
+		if errClose != nil {
+			return errClose
+		}
+	}
 	return nil
 }

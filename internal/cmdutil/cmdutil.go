@@ -13,6 +13,14 @@ import (
 )
 
 func CreateFetchClient() (data_service.DataFetcher, error) {
+	return create()
+}
+
+func CreatePostClient() (data_service.DataPoster, error) {
+	return create()
+}
+
+func create() (*data_service.S3Service, error) {
 	s3Client, err := createS3Client()
 	if err != nil {
 		return nil, err
@@ -23,6 +31,7 @@ func CreateFetchClient() (data_service.DataFetcher, error) {
 	}
 	return s3Service, nil
 }
+
 func createS3Client() (*s3.Client, error) {
 	accessKey := os.Getenv("AWS_ACCESS_KEY_ID")
 	secretKey := os.Getenv("AWS_SECRET_ACCESS_KEY")
