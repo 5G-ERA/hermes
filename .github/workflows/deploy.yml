@@ -1,0 +1,29 @@
+name: go_build_test
+
+on:
+  push:
+    tags: [v*]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: get version
+        id: get-version
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+      - name: build
+        run: docker build -f Dockerfile --tag hermes --label "runnumber=${GITHUB_RUN_ID}"
+      - name: log in to the registry
+        run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u $ --password-stdin
+      - name: Deploy
+        env:
+          IMAGE_TAG: ${{ steps.get-version.outputs.VERSION }}
+        run: |
+            docker tag hermes ghcr.io/${{ github.repository_owner }}/hermes:${IMAGE_TAG}
+            docker push ghcr.io/${{ github.repository_owner }}/hermes:${IMAGE_TAG}
+
+            if [[ ${{ steps.get-version.outputs.VERSION }} != *rc* ]]; then
+              docker tag hermes ghcr.io/${{ github.repository_owner }}/hermes:latest
+              docker push ghcr.io/${{ github.repository_owner }}/hermes:latest
+            fi
