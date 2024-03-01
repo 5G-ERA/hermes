@@ -22,10 +22,10 @@ jobs:
         run: |
           # make github.repository_owner lowercase
             REPO_OWNER=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')
-            docker tag hermes ghcr.io/$REPO_OWNER/hermes:${IMAGE_TAG}
+            docker tag hermes ghcr.io/${REPO_OWNER}/hermes:${IMAGE_TAG}
             docker push ghcr.io/${{ github.repository_owner }}/hermes:${IMAGE_TAG}
 
             if [[ ${{ steps.get-version.outputs.VERSION }} != *rc* ]]; then
-              docker tag hermes ghcr.io/$REPO_OWNER/hermes:latest
-              docker push ghcr.io/$REPO_OWNER/hermes:latest
+              docker tag hermes ghcr.io/${REPO_OWNER}/hermes:latest
+              docker push ghcr.io/${REPO_OWNER}/hermes:latest
             fi
