@@ -13,7 +13,7 @@ jobs:
         id: get-version
         run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
       - name: build
-        run: docker build -f Dockerfile --tag hermes --label "runnumber=${GITHUB_RUN_ID}"
+        run: docker build -f Dockerfile --tag hermes --label "runnumber=${GITHUB_RUN_ID}" .
       - name: log in to the registry
         run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u $ --password-stdin
       - name: Deploy
