@@ -19,13 +19,14 @@ jobs:
       - name: Deploy
         env:
           IMAGE_TAG: ${{ steps.get-version.outputs.VERSION }}
-        run: |
-          # make github.repository_owner lowercase
-            REPO_OWNER=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')
-            docker tag hermes ghcr.io/${REPO_OWNER}/hermes:${IMAGE_TAG}
-            docker push ghcr.io/${{ github.repository_owner }}/hermes:${IMAGE_TAG}
+        run: |            
+            IMAGE_ID=ghcr.io/${{ github.repository_owner }}/hermes
+            # Change all uppercase to lowercase
+            IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
+            docker tag hermes $IMAGE_ID:$IMAGE_TAG
+            docker push $IMAGE_ID:$IMAGE_TAG
 
             if [[ ${{ steps.get-version.outputs.VERSION }} != *rc* ]]; then
-              docker tag hermes ghcr.io/${REPO_OWNER}/hermes:latest
-              docker push ghcr.io/${REPO_OWNER}/hermes:latest
+              docker tag $IMAGE_ID:$IMAGE_TAG $IMAGE_ID:latest
+              docker push $IMAGE_ID:latest
             fi
