@@ -48,7 +48,11 @@ func (s3Service *S3Service) Fetch(netAppKey, targetDir string) error {
 
 	for _, obj := range resp.Contents {
 		// Specify the local file path to save the object
-		localFilePath := filepath.Join(targetDir, netAppKey, *obj.Key)
+		sanitized := strings.Replace(*obj.Key, netAppKey+"/", "", 1)
+		if sanitized == "" {
+			continue
+		}
+		localFilePath := filepath.Join(targetDir, netAppKey, sanitized)
 		errCreateDir := util.EnsurePathToFileExists(localFilePath)
 		if errCreateDir != nil {
 			return errCreateDir
@@ -82,7 +86,7 @@ func (s3Service *S3Service) Fetch(netAppKey, targetDir string) error {
 func (s3Service *S3Service) Post(netAppKey, sourceDir string) error {
 	uploader := manager.NewUploader(s3Service.s3)
 
-	files, err := os.ReadDir(sourceDir)
+	files, err := util.ReadAllFiles(filepath.Join(sourceDir, netAppKey))
 	if err != nil {
 		return err
 	}
@@ -96,7 +100,7 @@ func (s3Service *S3Service) Post(netAppKey, sourceDir string) error {
 		fmt.Printf("Uploading file: %s\n", file.Name())
 		_, uploadErr := uploader.Upload(context.TODO(), &s3.PutObjectInput{
 			Bucket: aws.String(s3Service.bucket),
-			Key:    aws.String(file.Name()),
+			Key:    aws.String(filepath.Join(netAppKey, file.Name())),
 			Body:   fileData,
 		})
 
