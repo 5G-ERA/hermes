@@ -10,6 +10,10 @@ func EnsurePathToFileExists(path string) error {
 	return os.MkdirAll(dir, 0755)
 }
 
+func EnsurePathExists(path string) error {
+	return os.MkdirAll(path, 0755)
+}
+
 // ReadAllFiles lists all files form the directory including subdirectories
 func ReadAllFiles(root string) ([]os.DirEntry, error) {
 	var files []os.DirEntry

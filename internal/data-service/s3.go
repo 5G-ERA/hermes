@@ -38,12 +38,22 @@ func (s3Service *S3Service) Fetch(netAppKey, targetDir string) error {
 	// List all objects in the bucket
 	resp, err := s3Service.s3.ListObjectsV2(context.TODO(), &s3.ListObjectsV2Input{
 		Bucket: aws.String(s3Service.bucket),
+		Prefix: aws.String(netAppKey),
 	}, func(o *s3.Options) {
 		o.Region = s3Service.region
 	})
 
 	if err != nil {
 		return err
+	}
+
+	if len(resp.Contents) == 0 {
+		path := filepath.Join(targetDir, netAppKey)
+		errCreateDir := util.EnsurePathExists(path)
+		if errCreateDir != nil {
+			return errCreateDir
+		}
+		fmt.Printf("No files to be downloaded")
 	}
 
 	for _, obj := range resp.Contents {
